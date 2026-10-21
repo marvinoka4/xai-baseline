@@ -1,0 +1,3 @@
+model,n_folds,n_pairs,kendall_tau_mean,kendall_tau_sd,kendall_tau_min,top5_overlap_mean,top5_overlap_sd,top5_overlap_min
+lightgbm,25,300,0.943636,0.030561,0.878788,0.933333,0.094438,0.8
+logistic,25,300,0.952525,0.032582,0.848485,0.924,0.097239,0.8

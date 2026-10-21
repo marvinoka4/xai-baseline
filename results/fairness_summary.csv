@@ -1,0 +1,13 @@
+model,variant,attribute,scope,demographic_parity_difference_mean,demographic_parity_difference_std,demographic_parity_difference_min,demographic_parity_difference_max,equalized_odds_difference_mean,equalized_odds_difference_std,equalized_odds_difference_min,equalized_odds_difference_max
+lightgbm,aware,sex,sex,0.180174,0.008452,0.164245,0.197778,0.084019,0.020512,0.055899,0.135839
+lightgbm,aware,race,race_primary,0.160816,0.021997,0.120715,0.216914,0.138773,0.048414,0.04269,0.232799
+lightgbm,aware,race,race_all,0.187038,0.028975,0.133394,0.243894,0.321444,0.120935,0.122726,0.578889
+lightgbm,unaware,sex,sex,0.176428,0.008484,0.161326,0.195007,0.07468,0.01889,0.055181,0.12237
+lightgbm,unaware,race,race_primary,0.148449,0.017867,0.10872,0.193466,0.103954,0.03688,0.038573,0.175968
+lightgbm,unaware,race,race_all,0.17159,0.027799,0.128156,0.224092,0.255846,0.126169,0.082707,0.52381
+logistic,aware,sex,sex,0.181204,0.006636,0.167667,0.19175,0.105984,0.020607,0.071999,0.153546
+logistic,aware,race,race_primary,0.175292,0.01934,0.140982,0.212207,0.209771,0.059027,0.117817,0.35525
+logistic,aware,race,race_all,0.201357,0.026826,0.160265,0.258218,0.331943,0.090833,0.155,0.551948
+logistic,unaware,sex,sex,0.175192,0.006766,0.16106,0.18802,0.087885,0.015173,0.067788,0.120489
+logistic,unaware,race,race_primary,0.15538,0.019166,0.120675,0.197295,0.146169,0.061367,0.047041,0.336901
+logistic,unaware,race,race_all,0.179225,0.026025,0.139995,0.227002,0.294837,0.08765,0.125,0.514595
