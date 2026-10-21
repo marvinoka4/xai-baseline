@@ -1,0 +1,8 @@
+attribute,group,n,positives,positive_rate,in_primary_race_metrics
+race,White,41762,10607,0.254,True
+race,Black,4685,566,0.1208,True
+race,Asian-Pac-Islander,1519,409,0.2693,True
+race,Amer-Indian-Eskimo,470,55,0.117,False
+race,Other,406,50,0.1232,False
+sex,Male,32650,9918,0.3038,
+sex,Female,16192,1769,0.1093,
