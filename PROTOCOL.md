@@ -25,7 +25,7 @@ Hyperparameters are fixed in advance and not tuned.
 - Accuracy, F1 for the positive class (income above 50K), and ROC-AUC on each held-out fold, with predictions at a threshold of 0.5 on the predicted probability. Reported as mean and standard deviation over the 25 folds. Reason: accuracy alone is misleading with 24% positives; F1 and ROC-AUC cover the positive class and ranking quality.
 
 ## Explanations
-- SHAP values on every held-out fold, on the log-odds scale: TreeExplainer for LightGBM (tree path-dependent, the default with no background data); LinearExplainer for logistic regression, with the training fold as the background data. Reason: the standard exact explainer for each model class.
+- SHAP values on every held-out fold, on the log-odds scale, using interventional SHAP for both models: TreeExplainer in interventional mode for LightGBM and LinearExplainer for logistic regression. Both use the same background data: 200 rows sampled without replacement from the training fold (sampling seed 2000 plus 10 times the split seed plus the fold index), encoded by that fold's fitted preprocessing, and used in full (no further subsampling). Reason: one definition of SHAP on one shared background makes the two models' attributions comparable; 200 rows keeps the computation within the CPU budget.
 - Attributions for the one-hot columns of each categorical feature are summed back to the original feature, giving one value per row for each of the 12 features. Reason: importance should be stated for features people recognise, not for encoding columns.
 - Global importance in a fold: the mean absolute SHAP value of each feature over the held-out rows.
 
@@ -34,9 +34,11 @@ Hyperparameters are fixed in advance and not tuned.
 
 ## Faithfulness check (deletion test)
 - In each fold, take 500 held-out rows sampled without replacement (sampling seed 1000 times the split seed plus the fold index).
-- For each row, remove its features one at a time in order of decreasing absolute SHAP value for that row, replacing each removed feature with the training fold's median (numeric features) or most frequent value (categorical features). After each removal, record the model's predicted probability for the class it predicted with nothing removed. This gives a curve over 0 to 12 removed features.
+- For each row, remove its features one at a time, replacing each removed feature with the training fold's median (numeric features) or most frequent value (categorical features). After each removal, record the model's predicted probability for the class it predicted with nothing removed. This gives a curve over 0 to 12 removed features.
+- Primary removal order: each feature's signed SHAP contribution toward the class the model predicted with nothing removed, largest first (the SHAP value for a row predicted as class 1, its negative for a row predicted as class 0). Features that push away from the predicted class are removed last. Reason: removing the features that most support the prediction should lower the model's confidence fastest; ordering by absolute value would mix in features that oppose the prediction, whose removal raises confidence.
+- Secondary removal order, reported alongside: decreasing absolute SHAP value.
 - Comparison: the same procedure with 5 random removal orders per row (seeded), averaged.
-- Report the area under each mean deletion curve, with the number of removed features scaled to the range 0 to 1 and integrated by the trapezoidal rule, for SHAP order and for random order, and their difference (random minus SHAP). Mean and standard deviation over 25 folds, for each model. Reason: if SHAP ranks the features the model relies on, removing them first should lower the model's confidence faster than removing features at random, giving a smaller area.
+- Report the area under each mean deletion curve, with the number of removed features scaled to the range 0 to 1 and integrated by the trapezoidal rule, for the signed order, the absolute order and the random order, and the difference random minus signed (primary) and random minus absolute (secondary). Mean and standard deviation over 25 folds, for each model. Reason: if SHAP identifies the features the model relies on, removing them in SHAP order should lower the model's confidence faster than removing features at random, giving a smaller area.
 
 ## Fairness
 - Using fairlearn on each held-out fold, with predictions at threshold 0.5: demographic parity difference (largest minus smallest selection rate between groups) and equalized odds difference (the larger of the largest true positive rate gap and the largest false positive rate gap between groups), across sex and across race, for both models. Mean and standard deviation over 25 folds. Reason: the two most common group fairness measures, one on predictions alone and one conditional on the true label.
@@ -57,7 +59,7 @@ Hyperparameters are fixed in advance and not tuned.
 - Adult comes from the 1994 US Census. Incomes, occupations and group compositions have changed since, and results do not describe any current population.
 - The label is whether reported income exceeded 50K, not a decision anyone made about the person. Fairness metrics here describe how the models' errors and positive predictions differ by group; they do not measure harm from a real decision process.
 - Sex and race are coarse, as recorded in the census; the categories do not capture identity, and Other and Amer-Indian-Eskimo are too small for stable estimates.
-- SHAP explains the fitted models, not the world. The two explainers also differ: tree path-dependent SHAP and interventional linear SHAP make different assumptions about dependence between features, so attributions are comparable in scale and meaning only approximately.
+- SHAP explains the fitted models, not the world. Both models are explained with interventional SHAP on the same 200-row background, which treats features as independent when filling in removed values; where features are strongly correlated (for example relationship and sex), attributions describe the model's response to combinations that may be rare in the data.
 - Fixed hyperparameters mean neither model is the best achievable; results compare two reasonable models, not tuned ones.
 - Cross-validation folds come from one dataset, so the spread across folds understates the variation expected on new data.
 
@@ -66,3 +68,6 @@ Hyperparameters are fixed in advance and not tuned.
 
 ## Change log
 - 2026-10-21: protocol fixed.
+- 2026-10-21, before any model was fitted: deletion test primary order changed to each feature's signed SHAP contribution toward the predicted class, largest first; ordering by absolute SHAP kept as a secondary result. Reason: absolute order removes features that oppose the prediction early, which raises confidence and blurs the test.
+- 2026-10-21, before any model was fitted: LightGBM explained with TreeExplainer in interventional mode, and both models given the same background of 200 rows sampled from the training fold. Reason: the two models' attributions then use one definition of SHAP and one reference distribution. The runtime was checked on one fold with permuted labels (no real-label model was fitted): about 150 seconds of SHAP per fold for LightGBM, about 1.1 hours for 25 folds.
+- 2026-10-21, before any model was fitted: the interpretation choices in this protocol were reviewed and accepted as written (missing values as "Unknown", duplicates kept, LightGBM on one-hot inputs, standardisation of numeric features only for logistic regression, and the 1,000-person threshold for the primary race metrics).

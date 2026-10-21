@@ -50,8 +50,21 @@ def curve_area(curve):
     return float(np.sum((curve[1:] + curve[:-1]) / 2 * np.diff(x)))
 
 
-def shap_orders(feature_shap):
-    """Per-row removal order by decreasing absolute SHAP (ties broken by column position)."""
+def signed_orders(feature_shap, predicted_one):
+    """Primary order: each feature's signed SHAP contribution toward the class the
+    model predicted with nothing removed, largest first.
+
+    feature_shap is on the log-odds scale of class 1, so the contribution toward
+    class 1 is the SHAP value and toward class 0 its negative. Features that push
+    away from the predicted class come last. Ties are broken by column position.
+    """
+    values = np.asarray(feature_shap, dtype=float)
+    toward = np.where(np.asarray(predicted_one)[:, None], values, -values)
+    return np.argsort(-toward, axis=1, kind="stable")
+
+
+def abs_orders(feature_shap):
+    """Secondary order: decreasing absolute SHAP (ties broken by column position)."""
     values = np.abs(np.asarray(feature_shap, dtype=float))
     return np.argsort(-values, axis=1, kind="stable")
 

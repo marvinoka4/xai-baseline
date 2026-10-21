@@ -38,6 +38,9 @@ THRESHOLD = 0.5
 # primary race disparity metrics; smaller groups are reported descriptively.
 RACE_MIN_GROUP = 1000
 
+# SHAP background: rows sampled from the training fold, shared by both explainers.
+BACKGROUND_ROWS = 200
+
 # Deletion test.
 DELETION_ROWS = 500
 DELETION_RANDOM_ORDERS = 5
